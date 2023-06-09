@@ -1,0 +1,205 @@
+
+library(dada2)
+
+BiocManager::install("DelayedArray")
+install.packages("Rcurl")
+
+
+
+path <- "01_Raw_Data/MiSeq_SOP/" # CHANGE ME to the directory containing the fastq files after unzipping.
+list.files(path)
+
+
+# Forward and reverse fastq filenames have format: SAMPLENAME_R1_001.fastq and SAMPLENAME_R2_001.fastq
+fnFs <- sort(list.files(path, pattern="_R1_001.fastq", full.names = TRUE))
+fnRs <- sort(list.files(path, pattern="_R2_001.fastq", full.names = TRUE))
+# Extract sample names, assuming filenames have format: SAMPLENAME_XXX.fastq
+sample.names <- sapply(strsplit(basename(fnFs), "_"), `[`, 1)
+
+pdf("03_Plots/QualityForwardPHRED.pdf",width = 21,height = 18)
+plotQualityProfile(fnFs[1:10])
+dev.off()
+
+pdf("03_Plots/QualityReversePHRED.pdf",width = 21,height = 18)
+plotQualityProfile(fnRs[1:10])
+dev.off()
+
+
+# Place filtered files in filtered/ subdirectory
+filtFs <- file.path(path, "filtered", paste0(sample.names, "_F_filt.fastq.gz"))
+filtRs <- file.path(path, "filtered", paste0(sample.names, "_R_filt.fastq.gz"))
+names(filtFs) <- sample.names
+names(filtRs) <- sample.names
+
+
+out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=c(240,160),
+                     maxN=0, maxEE=c(2,2), truncQ=2, rm.phix=TRUE,
+                     compress=TRUE, multithread=TRUE) # On Windows set multithread=FALSE
+head(out)
+
+#Denoising
+
+errF <- learnErrors(filtFs, multithread=TRUE)
+save(errF,file="04_Processed_Data/errF.RData")
+errR <- learnErrors(filtRs, multithread=TRUE)
+save(errF,file="04_Processed_Data/errR.RData")
+plotErrors(errF, nominalQ=TRUE)
+pdf("03_Plots/Errors.pdf")
+plotErrors(errF, nominalQ=TRUE)
+dev.off()
+
+dadaFs <- dada(filtFs, err=errF, multithread=TRUE)
+save(dadaFs,file = "04_Processed_Data/dadaFs.RData")
+dadaRs <- dada(filtRs, err=errR, multithread=TRUE)
+save(dadaRs,file = "04_Processed_Data/dadaRs.RData")
+
+mergers <- mergePairs(dadaFs, filtFs, dadaRs, filtRs, verbose=TRUE)
+save(mergers,file = "04_Processed_Data/mergers.RData")
+
+load("04_Processed_Data/mergers.RData")
+
+load("04_Processed_Data/mergers.RData")
+# Inspect the merger data.frame from the first sample
+head(mergers[[1]])
+
+seqtab <- makeSequenceTable(mergers)
+dim(seqtab)
+table(nchar(getSequences(seqtab)))
+seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE, verbose=TRUE)
+dim(seqtab.nochim)
+
+
+getN <- function(x) sum(getUniques(x))
+track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim))
+# If processing a single sample, remove the sapply calls: e.g. replace sapply(dadaFs, getN) with getN(dadaFs)
+colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
+rownames(track) <- sample.names
+head(track)
+
+
+taxa <- assignTaxonomy(seqtab.nochim, "01_Raw_Data/MiSeq_SOP/silva_nr99_v138.1_train_set.fa.gz", multithread=TRUE)
+taxa <- addSpecies(taxa, "01_Raw_Data/MiSeq_SOP/silva_species_assignment_v138.1.fa.gz")
+save(taxa,file="04_Processed_Data/taxa.RData")
+
+load("04_Processed_Data/taxa.RData")
+taxa.print <- taxa # Removing sequence rownames for display only
+rownames(taxa.print) <- NULL
+head(taxa.print)
+
+
+unqs.mock <- seqtab.nochim["Mock_F_filt.fastq.gz",]
+unqs.mock <- sort(unqs.mock[unqs.mock>0], decreasing=TRUE) # Drop ASVs absent in the Mock
+cat("DADA2 inferred", length(unqs.mock), "sample sequences present in the Mock community.\n")
+
+
+samples.out <- rownames(seqtab.nochim)
+subject <- sapply(strsplit(samples.out, "D"), `[`, 1)
+gender <- substr(subject,1,1)
+subject <- substr(subject,2,999)
+day <- as.integer(sapply(strsplit(samples.out, "D"), `[`, 2))
+samdf <- data.frame(Subject=subject, Gender=gender, Day=day)
+samdf$When <- "Early"
+samdf$When[samdf$Day>100] <- "Late"
+rownames(samdf) <- samples.out
+
+
+library(phyloseq)
+
+ps <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE), 
+               sample_data(samdf), 
+               tax_table(taxa))
+ps <- prune_samples(sample_names(ps) != "Mock", ps) # Remove mock sample
+
+dna <- Biostrings::DNAStringSet(taxa_names(ps))
+names(dna) <- taxa_names(ps)
+ps <- merge_phyloseq(ps, dna)
+taxa_names(ps) <- paste0("ASV", seq(ntaxa(ps)))
+ps
+
+plot_richness(ps, x="Day", measures=c("Shannon", "Simpson"), color="When")
+
+
+
+##################CLASE CON OBVJETIO#################
+library(phyloseq)
+
+
+load("04_Processed_Data/ps.RData")
+
+
+
+ps
+
+otu_table(ps)
+sample_data(ps)
+
+
+help("phyloseq")
+
+data("esophagus")
+eleso <-esophagus
+
+sample_data(eleso)#########nocargaaaaa
+
+eleso
+otu_table(eleso)
+
+plot_richness(esophagus, x="Day", measures=c("Shannon", "Simpson"))
+
+
+####################
+
+data("enterotype")
+
+sample_data(enterotype)
+
+otu_table(enterotype)
+
+
+
+
+
+########### Global patterns#############
+
+data("GlobalPatterns")
+
+View(sample_data(GlobalPatterns))
+
+
+plot_richness(GlobalPatterns, x="SampleType", measures=c("Chao1", "Simpson"), color="Primer")
+
+#plot_bar(GlobalPatterns, )
+
+
+
+
+
+##########################################
+############################################
+
+library(phyloseq)
+library(MGnifyR)
+
+
+#Set up the MGnify client instance
+mgclnt <- mgnify_client(usecache = T, cache_dir = '/tmp/MGnify_cache')
+
+#Retrieve the list of analyses associated with a study
+accession_list <- mgnify_analyses_from_studies(mgclnt, "MGYS00000943", usecache = T)
+
+#Download all associated study/sample and analysis metadata
+meta_dataframe <- mgnify_get_analyses_metadata(mgclnt, accession_list, usecache = T )
+
+#Convert analyses outputs to a single `phyloseq` object
+psobj <- mgnify_get_analyses_phyloseq(mgclnt, meta_dataframe$analysis_accession, usecache = T)
+psobj
+
+#Retrieve Interpro assignment counts for these analyses
+ip_df <- mgnify_get_analyses_results(mgclnt, meta_dataframe$analysis_accession, retrievelist = c("interpro-identifiers"), usecache = T)
+head(ip_df)
+
+
+
+
+
+

@@ -3,7 +3,7 @@
     "path": "C:/Users/DELL/Desktop/GitHub/ProyectoFinal_genomica/Proyectofinal/02_Scripts/microbioma.R",
     "project_path": "02_Scripts/microbioma.R",
     "type": "r_source",
-    "hash": "0",
+    "hash": "3243458088",
     "contents": "",
     "dirty": false,
     "created": 1686266522904.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "141,32",
-        "scrollLine": "0"
+        "cursorPosition": "187,0",
+        "scrollLine": "160"
     },
     "folds": "",
-    "lastKnownWriteTime": 1686805399,
+    "lastKnownWriteTime": 1687054793,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1686805399986,
+    "last_content_update": 1687054793345,
     "read_only": false,
     "read_only_alternatives": []
 }

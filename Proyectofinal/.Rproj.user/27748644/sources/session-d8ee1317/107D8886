@@ -1,0 +1,28 @@
+{
+    "id": "107D8886",
+    "path": null,
+    "project_path": null,
+    "type": "object_explorer",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1687053844485.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "id": "c65d9e973fbe4eaaac4e9ad697076b29",
+        "name": "sample_variables(vbioma)",
+        "title": "sample_variables(vbioma)",
+        "language": "R",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 2314885436530631200,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1687053844485,
+    "read_only": false,
+    "read_only_alternatives": []
+}

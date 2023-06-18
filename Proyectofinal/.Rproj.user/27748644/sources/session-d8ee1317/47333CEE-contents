@@ -114,7 +114,7 @@ vbioma <- mgnify_get_analyses_phyloseq(bioma, meta_dataframe$analysis_accession,
 vbioma
 save(vbioma, file= "04_saved/vbioma.RData")
 #save(psobj2, file = "04_saved/psobj2.RData")
-
+load("04_saved/vbioma.RData")
 # vamos a explorar las opciones dentro del bioma 
 vbioma
 otu_table (vbioma)
@@ -122,8 +122,8 @@ otu_table (vbioma)
 # diferentes dentro de cada una de las muestras, con esto ya acomodamos los organismos 
 # que se encontraron dentro del muestreo)
 
-sample_data (vbioma)
-sample_variables (vbioma)
+View(sample_data (vbioma))
+View(sample_variables (vbioma))
 # tenemos 57 variables dentro de las que encontramos el identificador para cada una de las muestras 
 # que son 35, el tipo de experimentacion que se realizo (amplicones), el tiempo de analisis 
 # la plataforma que se utilizo para el analisisi que fue ilumina miseq, el tamaño de las seucencias 
@@ -140,3 +140,55 @@ rank_names (vbioma)
 
 ####################################################################
 plot_bar(vbioma, fill = "Genus")
+
+library(ggplot2)
+
+
+#It is better to only consider the most abundant OTUs for heatmaps. 
+#For example one can only take OTUs that represent at least 20% of reads
+#in at least one sample. Remember we normalized all the sampples 
+#to median number of reads (total)
+
+total = median(sample_sums(vbioma))
+
+
+vbioma_filtrado <- filter_taxa(vbioma, function(x) sum(x > total*0.20) > 0, TRUE)
+vbioma_filtrado
+
+plot_heatmap(vbioma_filtrado, method = "NMDS", distance = "bray")
+
+  plot_heatmap(vbioma_filtrado, method = "MDS", distance = "(A+B-2*J)/(A+B-J)", 
+             taxa.label = "Genus", taxa.order = "Genus", 
+             trans=NULL)
+
+
+
+
+
+########################
+  BiocManager::install(c("microbiome", "ComplexHeatmap"), update = FALSE)
+  
+  install.packages(
+    "microViz",
+    repos = c(davidbarnett = "https://david-barnett.r-universe.dev", getOption("repos"))
+  )
+  
+  
+  library(microViz)
+  library(microbiome) 
+  library(ComplexHeatmap)
+    
+  # Arranging by decreasing Bacteroides abundance
+  vbiomafixed <- vbioma %>% tax_fix()
+  
+  View(vbiomafixed %>%
+    tax_agg("Species") %>%
+    ps_arrange(.target = "otu_table") %>%
+    otu_get() )
+
+
+
+
+
+
+

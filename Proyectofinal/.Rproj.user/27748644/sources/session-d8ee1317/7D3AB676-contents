@@ -1,0 +1,4 @@
+x <- read.table("01_RawData/GSE151666_series_matrix.txt", fill = T)
+
+
+View(x)

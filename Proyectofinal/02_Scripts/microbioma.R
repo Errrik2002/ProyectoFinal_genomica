@@ -49,6 +49,73 @@ plot_bar(psobj1, fill = "Genus")
 # Closing the graphical device
 dev.off() 
 
+#################analisis de frecuencia##############
+total1168 = median(sample_sums(psobj1))
+
+
+ps1168filtrado <- filter_taxa(psobj1, function(x) sum(x > total1168*0.20) > 0, TRUE)
+ps1168filtrado
+
+
+
+plot_heatmap(ps1168filtrado, method = "NMDS", distance = "bray")
+
+plot_heatmap(ps1168filtrado, method = "MDS", distance = "(A+B-2*J)/(A+B-J)", 
+             taxa.label = "Genus", taxa.order = "Genus", 
+             trans=NULL)
+
+
+psobj1fixed <- psobj1 %>% tax_fix()
+
+View(psobj1fixed %>%
+       tax_agg("Species") %>%
+       ps_arrange(.target = "otu_table") %>%
+       otu_get() )
+
+
+
+
+View(tax_table(psobj1))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ###################################### MGYS00001373 FLORENCIA ##############################################################
 
@@ -83,13 +150,67 @@ plot_bar(psobj2, fill = "Genus")
 #
 
 ######################################
-pdf("03_results/BAR_MGYS00001168.pdf")
+pdf("03_results/BAR_MGYS00001373.pdf")
 
 
-plot_bar(psobj1, fill = "Genus")
+plot_bar(psobj2, fill = "Genus")
 
 # Closing the graphical device
 dev.off() 
+
+#################analisis de frecuencia##############
+total1373 = median(sample_sums(psobj2))
+
+
+ps1373filtrado <- filter_taxa(psobj2, function(x) sum(x > total1373*0.20) > 0, TRUE)
+ps1373filtrado
+
+
+
+plot_heatmap(ps1373filtrado, method = "NMDS", distance = "bray")
+
+plot_heatmap(ps1373filtrado, method = "MDS", distance = "(A+B-2*J)/(A+B-J)", 
+             taxa.label = "Species", taxa.order = "Species", 
+             trans=NULL)
+
+
+psobj2fixed <- psobj2 %>% tax_fix()
+
+View(psobj2fixed %>%
+       tax_agg("Species") %>%
+       ps_arrange(.target = "otu_table") %>%
+       otu_get() )
+
+
+
+
+View(tax_table(psobj2))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

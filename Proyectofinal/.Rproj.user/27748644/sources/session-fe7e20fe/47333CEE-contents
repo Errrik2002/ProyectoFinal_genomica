@@ -67,13 +67,14 @@ plot_heatmap(ps1168filtrado, method = "MDS", distance = "(A+B-2*J)/(A+B-J)",
 
 psobj1fixed <- psobj1 %>% tax_fix()
 
-View(psobj1fixed %>%
+BaseMGYS00001168 <- psobj1fixed %>%
        tax_agg("Species") %>%
        ps_arrange(.target = "otu_table") %>%
-       otu_get() )
+       otu_get() 
 
 
-
+#save(psobj2, file = "04_saved/psobj2.RData")
+save(BaseMGYS00001168, file = "04_saved/BaseMGYS00001168.RData")
 
 View(tax_table(psobj1))
 
@@ -176,12 +177,14 @@ plot_heatmap(ps1373filtrado, method = "MDS", distance = "(A+B-2*J)/(A+B-J)",
 
 psobj2fixed <- psobj2 %>% tax_fix()
 
-psobj2fixed %>%
+BaseMGYS00001373 <-psobj2fixed %>%
        tax_agg("Species") %>%
        ps_arrange(.target = "otu_table") %>%
        otu_get()
 
 
+#save(psobj2, file = "04_saved/psobj2.RData")
+save(BaseMGYS00001373, file = "04_saved/BaseMGYS00001373.RData")
 
 
 View(tax_table(psobj2))
@@ -302,13 +305,13 @@ plot_heatmap(vbioma_filtrado, method = "NMDS", distance = "bray")
   # Arranging by decreasing Bacteroides abundance
   vbiomafixed <- vbioma %>% tax_fix()
   
-  View(vbiomafixed %>%
+  Basevbioma <-vbiomafixed %>%
     tax_agg("Species") %>%
     ps_arrange(.target = "otu_table") %>%
-    otu_get() )
+    otu_get() 
 
-
-
+  #save(psobj2, file = "04_saved/psobj2.RData")
+save(Basevbioma, file = "04_saved/Basevbioma.RData")
 
 
 
